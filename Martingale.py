@@ -2,6 +2,9 @@ import tkinter as tk
 from math import*
 from pynput.mouse import Listener, Button, Controller
 import time
+import pyautogui
+import pytesseract
+import cv2
 
 mouse = Controller()
 def start():
@@ -73,47 +76,14 @@ def calculateOdds():
         progString = progString + "-" + str(int(betAmount * pow(2, i)))
     progLabel.config(text= progString)
 
-preferencesWin = tk.Tk()
-preferencesWin.title("Preferences")
-preferencesWin.geometry('450x200')
+def fillProg():
+    progEntryLabel.config(text=1)
 
-options = [
-    "Maximize Gains",
-    "Equalize Losses",
-    "Minimize losses"
-]
-clicked = tk.StringVar() 
-clicked.set( "Maximize Gains" ) 
-dropDown = tk.OptionMenu( preferencesWin , clicked , *options ) 
-dropDown.grid(column =0, row =3)
-#dropDown.pack() 
-
-bankrollLabel = tk.Label(preferencesWin, text = "Bankroll")
-bankrollLabel.grid(column =0, row =0)
-
-bankrollEntry = tk.Entry(preferencesWin, width=10)
-bankrollEntry.grid(column =0, row =1)
-
-betAmountLabel = tk.Label(preferencesWin, text = "Bet Amount")
-betAmountLabel.grid(column =1, row =0)
-
-betAmountEntry = tk.Entry(preferencesWin, width=10)
-betAmountEntry.grid(column =1, row =1)
-
-lossesLabel = tk.Label(preferencesWin, text = "Consecutive Losses to Lose:")
-lossesLabel.grid(column =2, row =0)
-oddsLabel = tk.Label(preferencesWin, text = "Odds: Na%")
-oddsLabel.grid(column =2, row =1)
-progLabel = tk.Label(preferencesWin, text = "")
-progLabel.grid(column=2, row=2)
-
-calcButton =tk.Button(preferencesWin, text = "Calculate" ,
-             fg = "red", command=calculateOdds)
-calcButton.grid(column=0, row=2)
-
-automationWin = tk.Toplevel(preferencesWin)
-automationWin.transient( preferencesWin )
-automationWin.title( "Child" )
+def calc():
+    print("working?")
+    myVal = progLabel.cget("text")
+    print(myVal)
+    progEntry.insert(0,string=myVal)
 
 chipPosX = 0
 chipPosY = 0
@@ -121,23 +91,76 @@ betPosX = 0
 betPosY = 0
 winPosX = 0
 winPosY = 0
+Win = tk.Tk()
 
-ChipPosLabel = tk.Label(automationWin, text= "Set Chip Position")
-ChipPosLabel.grid(column=0, row=0)
-setButtonChip = tk.Button(automationWin, text= "set", fg= "red", command=lambda: mouseEvent(btn="chip"))
-setButtonChip.grid(column=0, row=1)
-BetPosLabel = tk.Label(automationWin, text= "Set Betting Position")
-BetPosLabel.grid(column=1, row=0)
-setButtonBet = tk.Button(automationWin, text= "set", fg= "red", command=lambda: mouseEvent(btn="bet"))
-setButtonBet.grid(column=1, row=1)
-winPosLabel = tk.Label(automationWin, text= "Set Winning Position")
-winPosLabel.grid(column=2, row=0)
-setButtonWin = tk.Button(automationWin, text= "set", fg= "red", command=lambda: mouseEvent(btn="win"))
-setButtonWin.grid(column=2, row=1)
-startButton = tk.Button(automationWin, text= "Start", fg= "green", command= start)
-startButton.grid(column=1, row=2)
+Win.title("Betting Automator")
+Win.geometry('245x845')
 
-preferencesWin.mainloop()
+automatorFrame = tk.Frame(Win)
+#automatorFrame.configure(bg="white")
+automatorFrame.pack(padx=20, pady=20)
+calcFrame = tk.Frame(Win)
+calcFrame.configure()
+calcFrame.pack(padx=20)
+
+options = [
+    "Maximize Gains",
+    "Equalize Losses",
+    "Minimize losses"
+]
+calcHeader = tk.Label(calcFrame, text= "Calculate Odds", pady=10)
+calcHeader.grid(column=0, row=0, columnspan=2, sticky="W")
+clicked = tk.StringVar() 
+clicked.set( "Maximize Gains" ) 
+dropDown = tk.OptionMenu( calcFrame , clicked , *options ) 
+dropDown.grid(column =0, row =3, columnspan=2, sticky="W")
+#dropDown.pack() 
+
+bankrollLabel = tk.Label(calcFrame, text = "Bankroll:", anchor="e", width=12)
+bankrollLabel.grid(column =0, row =1, sticky="W")
+
+bankrollEntry = tk.Entry(calcFrame, width=8)
+bankrollEntry.grid(column =1, row =1)
+
+betAmountLabel = tk.Label(calcFrame, text = "Bet Amount:", anchor="e", width=12)
+betAmountLabel.grid(column =0, row =2, sticky="W")
+
+betAmountEntry = tk.Entry(calcFrame, width=8)
+betAmountEntry.grid(column =1, row =2)
+
+lossesLabel = tk.Label(calcFrame, text = "Consecutive Losses to Lose:")
+lossesLabel.grid(column =0, row =5, columnspan=2, sticky="W")
+oddsLabel = tk.Label(calcFrame, text = "Odds: Na%")
+oddsLabel.grid(column =0, row =6)
+progLabel = tk.Label(calcFrame, text = "")
+progLabel.grid(column=0, row=7, columnspan=2, sticky="W")
+
+calcButton =tk.Button(calcFrame, text = "Calculate" ,
+            fg = "red", command=calculateOdds)
+calcButton.grid(column=0, row=4, columnspan=2, sticky="W")
+header = tk.Label(automatorFrame, text= "Set Positions", pady=10)
+header.grid(column=0, row=0, sticky="W")
+ChipPosLabel = tk.Label(automatorFrame, text= "Chip Position:",  width=12, padx=10, anchor= "e")
+ChipPosLabel.grid(column=0, row=1, sticky="W")
+setButtonChip = tk.Button(automatorFrame, text= "set", fg= "red", command=lambda: mouseEvent(btn="chip"))
+setButtonChip.grid(column=1, row=1, sticky="W")
+BetPosLabel = tk.Label(automatorFrame, text= "Betting Position:", width=12, padx=10, anchor= "e")
+BetPosLabel.grid(column=0, row=2, sticky="W")
+setButtonBet = tk.Button(automatorFrame, text= "set", fg= "red", command=lambda: mouseEvent(btn="bet"))
+setButtonBet.grid(column=1, row=2, sticky="W")
+winPosLabel = tk.Label(automatorFrame, text= "Winning Position:",  width=12, padx=10, anchor= "e")
+winPosLabel.grid(column=0, row=3, sticky="W")
+setButtonWin = tk.Button(automatorFrame, text= "set", fg= "red", command=lambda: mouseEvent(btn="win"))
+setButtonWin.grid(column=1, row=3, sticky="W")
+progEntryLabel = tk.Label(automatorFrame, text= "Betting Progression", anchor= "w", pady=10)
+progEntryLabel.grid(column=0, row=4, sticky="W")
+takeFromCalc = tk.Button(automatorFrame, text= "from calc", fg= "black", font=("Arial", 10), width=5, command=calc)
+takeFromCalc.grid(column=1, row=4, columnspan= 2)
+progEntry = tk.Entry(automatorFrame, width=20)
+progEntry.grid(column=0, row=5, columnspan=2, sticky="W")
+startButton = tk.Button(automatorFrame, text= "Start", fg= "green", command= start)
+startButton.grid(column=0, row=6, columnspan= 2)
+Win.mainloop()
 
 
 

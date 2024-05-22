@@ -68,10 +68,12 @@ def preprocess_image(image_path):
     # Apply thresholding to get a binary image
     _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
+    inverted = cv2.bitwise_not(binary)
+
     # Apply a GaussianBlur to denoise the image
     #denoised = cv2.GaussianBlur(binary, (5, 5), 0)
 
-    return binary
+    return inverted
 
 def extract_text_from_image(image_path):
     preprocessed_img = preprocess_image(image_path)
@@ -82,7 +84,7 @@ def extract_text_from_image(image_path):
         cv2.destroyAllWindows()
 
         # Use pytesseract to extract text from the preprocessed image
-        words_in_image = pytesseract.image_to_string(preprocessed_img)
+        words_in_image = pytesseract.image_to_string(preprocessed_img, config="--psm 6 digits")
         print("Words in image: " + words_in_image)
     else:
         print("Preprocessing failed. No text extracted.")
